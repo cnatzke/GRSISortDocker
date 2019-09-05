@@ -7,7 +7,7 @@ build: docker_build output
 release: docker_build docker_push output
 
 # image can be overwritten with env var.
-DOCKER_IMAGE ?= cnatzke/GRSISortDocker
+DOCKER_IMAGE ?= cnatzke/root-cern
 
 # get latest commit
 GIT_COMMIT = $(strip $(shell git rev-parse --short HEAD))
