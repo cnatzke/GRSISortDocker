@@ -24,49 +24,75 @@ ARG VCS_REF
 ARG VCS_URL
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="ROOT ${VERSION_ROOT} python3 GRSISort ${VERSION_GRSI}"
-      org.label-schema.description="Compiled ROOT python3 GRSISort environment"
-      org.label-schema.url=
-      org.label-schema
-      org.label-schema
-      org.label-schema
-      org.label-schema
-      org.label-schema
+      org.label-schema.name="ROOT ${VERSION_ROOT} python3 GRSISort ${VERSION_GRSI}" \
+      org.label-schema.description="Compiled ROOT python3 GRSISort environment" \
+      org.label-schema.url="https://github.com/cnatzke/GRSISortDocker" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.VCS_URL=$VCS_URL \
+      org.label-schema.version=$VERSION \
+      org.label-schema.schema-version="1.0"
 
-LABEL description="Framework for running GRSISort across different environments"
-LABEL version="0.1.0"
+#LABEL description="Framework for running GRSISort across different environments"
+#LABEL version="0.1.0"
 
+SHELL ["/bin/bash", "-c"]
+
+# Install dependencies and python
 RUN apt-get update && apt-get install -y \
+    python3 python3-dev python3-pip \
     git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev \
-    libxft-dev libxext-dev wget
-# install basic libraries
-RUN apt-get install -y \
+    libxft-dev libxext-dev libpng-dev libjpeg-dev \
+    sudo wget curl \
+    # optional ROOT libraries
     gfortran libssl-dev libpcre3-dev \
     xlibmesa-glu-dev libglew1.5-dev libftgl-dev \
     libmysqlclient-dev libfftw3-dev libcfitsio-dev \
     graphviz-dev libavahi-compat-libdnssd-dev \
-    libldap2-dev python-dev libxml2-dev libkrb5-dev \
-    libgsl0-dev libqt4-dev
-    
+    libldap2-dev libxml2-dev libkrb5-dev \
+    libgsl0-dev libqt4-dev && \ 
+    # clean up
+    rm -rf /var/lib/apt/lists/* && \
+    pip3 install --upgrade pip setuptools && \
+    # make some useful symlinks that are expected to exist
+    if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+    if [[ ! -e /usr/bin/python-config ]]; then ln -sf /usr/bin/python3-config /usr/bin/python-config; fi && \
+    if [[ ! -e /usr/bin/pip ]]; then ln -sf /usr/bin/pip3 /usr/bin/pip; fi
+ 
 ################################################################################ 
 # ROOT BUILD
 ################################################################################ 
-# download and build ROOT
-RUN mkdir /softwares && cd /softwares && mkdir buildroot && \
-    wget https://root.cern.ch/download/root_v${VERSION_ROOT}.source.tar.gz  && \
-    tar xvf root_v${VERSION_ROOT}.source.tar.gz  
-    
-RUN cd /softwares/buildroot && cmake \
-      -DCMAKE_INSTALL_PREFIX=/softwares/root \ 
-      -Dminuit2=ON -Dxml=ON \
-      -Dmathmore=ON \
-      ../root-6.14.06 && \ 
+# download and install ROOT
+WORKDIR /root
+RUN wget https://root.cern.ch/download/root_v${VERSION_ROOT}.source.tar.gz  && \
+    tar xvfz root_v${VERSION_ROOT}.source.tar.gz && \
+    mkdir /opt/root && \
+    cd /opt/root && \ 
+    # ROOT build options
+    cmake ${HOME}/root-${VERSION_ROOT}/ \
+      -Dpython3=ON \
+      -DPYTHON_EXECUTABLE:FILEPATH="/usr/bin/python3" \
+      -DPYTHON_INCLUDE_DIR:PATH="/usr/include/python3.6m" \
+      -DPYTHON_INCLUDE_DIR2:PATH="/usr/include/x86_64-linux-gnu/python3.6m" \
+      -DPYTHON_LIBRARY:FILEPATH="/usr/lib/x86_64-linux-gnu/libpython3.6m.so" \
+      -Dminuit2=ON \
+      -Dxml=ON \
+      -Dmathmore=ON && \
     cmake --build . -- -j5 && \
-    make install
+    rm -r ${HOME}/root-${VERSION_ROOT}/ && ${HOME}/root_v${VERSION_ROOT}.source.tar.gz
 
-# set ROOT environment
-ENV ROOTSYS "/software/root"
-ENV PATH "$ROOTSYS/bin:$ROOTSYS/bin/bin:$PATH"
-ENV LD_LIBRARY_PATH "$ROOTSYS/lib:$LD_LIBRARY_PATH"
-ENV PYTHONPATH "$ROOTSYS/lib:$PYTHONPATH"
+# Create ROOT user 
+RUN groupadd -g 1000 rootusr && \
+    adduser --disabled-password --gecos "" -u 1000 --gid 1000 rootusr && \
+    echo "rootusr ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
 
+USER rootusr
+WORKDIR /home/rootusr
+ENV HOME /home/rootusr
+ADD pythonrc.py $HOME/.pythonrc.py
+ADD bashrc      $HOME/.bashrc
+ADD bashrc      $HOME/.zshrc
+ADD entrypoint.sh /opt/root/entrypoint.sh
+RUN sudo chmod 755 /opt/root/entrypoint.sh
+
+ENTRYPOINT [ "/opt/root/entrypoint.sh"]
+CMD        [ "/bin/zsh"]
