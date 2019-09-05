@@ -44,6 +44,10 @@ else
 DOCKER_TAG = $(CODE_VERSION)-$(GIT_COMMIT)$(DOCKER_TAG_SUFFIX)
 endif
 
+#################################################################
+# EVERYTHING BELOW HERE REQUIRES TAB, NOT SPACE
+#################################################################
+
 docker_build:
 	# build Docker image
 	docker build \
@@ -51,10 +55,12 @@ docker_build:
 		--build-arg VERSION=$(CODE_VERSION) \
 		--build-arg VCS_URL=`git config --get remote.origin.url` \
 		--build-arg VCS_REF=$(GIT_COMMIT) \
-			-t $(DOCKER_IMAGE):$(DOCKER_TAG) \
-			--compress --squash .
-			# tag image as latest
-			docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(DOCKER_IMAGE):latest
+			-t $(DOCKER_IMAGE):$(DOCKER_TAG) . \
+			# experimental for smaller image size. need to test later 
+			#--compress --squash .
+
+	# tag image as latest
+	docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(DOCKER_IMAGE):latest
 
 docker_push:
 	# push to DockerHub
