@@ -25,15 +25,12 @@ ARG VCS_URL
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="ROOT ${VERSION_ROOT} python3 GRSISort ${VERSION_GRSI}" \
-      org.label-schema.description="Compiled ROOT python3 GRSISort environment" \
+      org.label-schema.description="Framework for running GRSISort across different environments" \
       org.label-schema.url="https://github.com/cnatzke/GRSISortDocker" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.VCS_URL=$VCS_URL \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"
-
-#LABEL description="Framework for running GRSISort across different environments"
-#LABEL version="0.1.0"
 
 SHELL ["/bin/bash", "-c"]
 
@@ -78,7 +75,8 @@ RUN wget https://root.cern.ch/download/root_v${VERSION_ROOT}.source.tar.gz  && \
       -Dxml=ON \
       -Dmathmore=ON && \
     cmake --build . -- -j5 && \
-    rm -r ${HOME}/root-${VERSION_ROOT}/ && ${HOME}/root_v${VERSION_ROOT}.source.tar.gz
+    rm -r ${HOME}/root-${VERSION_ROOT}/ && \
+    rm ${HOME}/root_v${VERSION_ROOT}.source.tar.gz
 
 # Create ROOT user 
 RUN groupadd -g 1000 rootusr && \
