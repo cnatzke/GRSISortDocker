@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y \
     python3 python3-dev python3-pip \
     git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev \
     libxft-dev libxext-dev libpng-dev libjpeg-dev \
-    sudo wget curl \
+    sudo wget curl zsh \
     # optional ROOT libraries
     gfortran libssl-dev libpcre3-dev \
     xlibmesa-glu-dev libglew1.5-dev libftgl-dev \
