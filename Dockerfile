@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y \
     python3 python3-dev python3-pip \
     git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev \
     libxft-dev libxext-dev libpng-dev libjpeg-dev \
-    sudo wget curl zsh \
+    sudo wget curl zsh evince\
     # optional ROOT libraries
     gfortran libssl-dev libpcre3-dev \
     xlibmesa-glu-dev libglew1.5-dev libftgl-dev \
@@ -79,13 +79,13 @@ RUN wget https://root.cern.ch/download/root_v${VERSION_ROOT}.source.tar.gz  && \
     rm ${HOME}/root_v${VERSION_ROOT}.source.tar.gz
 
 # Create ROOT user 
-RUN groupadd -g 1000 rootusr && \
-    adduser --disabled-password --gecos "" -u 1000 --gid 1000 rootusr && \
-    echo "rootusr ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
+#RUN groupadd -g 1000 rootusr && \
+#    adduser --disabled-password --gecos "" -u 1000 --gid 1000 rootusr && \
+#    echo "rootusr ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
 
-USER rootusr
-WORKDIR /home/rootusr
-ENV HOME /home/rootusr
+#USER rootusr
+#WORKDIR /home/rootusr
+#ENV HOME /home/rootusr
 ADD pythonrc.py $HOME/.pythonrc.py
 ADD bashrc      $HOME/.bashrc
 ADD bashrc      $HOME/.zshrc
