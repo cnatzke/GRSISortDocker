@@ -28,10 +28,11 @@ ifeq ($(MAKECMDGOALS),release)
 DOCKER_TAG = $(CODE_VERSION)
 
 # see what commit is tagged to match the version
-VERSION_COMMIT = $(strip $(shell git rev-list $(CODE_VERSION) -n 1 | cut -c1-7))
-ifneq ($(VERSION_COMMIT), $(GIT_COMMIT))
-$(error echo You are trying to push a build based on commit $(GIT_COMMIT) but the tagged version release is $(VERSION_COMMIT))
-endif
+# Not working
+#VERSION_COMMIT = $(strip $(shell git rev-list $(CODE_VERSION) -n 1 | cut -c1-7))
+#ifneq ($(VERSION_COMMIT), $(GIT_COMMIT))
+#$(error echo You are trying to push a build based on commit $(GIT_COMMIT) but the tagged version release is $(VERSION_COMMIT))
+#endif
 
 # don't push to DockerHub if this is not a clean repo
 ifneq (x$(GIT_NOT_CLEAN_CHECK), x)
