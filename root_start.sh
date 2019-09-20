@@ -3,10 +3,9 @@
 docker run -it --rm \
     --env="DISPLAY" \
     --net=host \
-    --hostname="root_container" \
     --user=$(id -u) \
-    --volume=$(pwd):$(pwd) \
-    --workdir="$(pwd)" \
+    --volume="/home/$USER:/home/$USER" \
+    --workdir="$PWD" \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \
     --volume="/etc/shadow:/etc/shadow:ro" \
